@@ -1,0 +1,105 @@
+== NLP ==
+
+This is a Chicken Scheme egg which provides a framework for Natural
+Language Processing.
+
+It currently provides
+ - a means of parsing an arbitrary sentence given a context-free grammar (CFG)
+   in the form specified (as shown in an example below).
+ - a means of performing theta-role assignment or ''linking'' where
+   words/phrases that correspond to participants in the sentence are given
+   roles such a agent, patient, etc.
+
+In the future, this should also include
+ - a richer grammar with context-sensitive rules
+ - bindings to cmu-sphinx for actual speech data
+
+==== High-level ====
+
+:(sentence:parse-sentence sentence cfg)
+
+Parses a given sentence according to the specified CFG and produces a parse
+tree tagged with the corresponding part-of-speech from the CFG.
+
+:(sentence:parse-sentence-any sentence cfg)
+
+Where the previous procedure only work for a complete sentence, as mandated by
+the CFG, this procedure will produce a parse-tree for phrases and fragments of
+sentences.
+
+:(sentence->participants-and-roles sentence cfg semantics)
+
+Provides an association list of the roles that participants in the sentence are
+deemed to be filling. Uses the ''theta-role-assignment'' procedure to find the
+associations from the provided semantics.
+
+=== Examples ===
+
+  (use traversal nondeterminism nlp)
+  (define (*set1:semantics* lexical-entry)
+   (let ((all-roles '(agent patient referent goal source)))
+    (case lexical-entry
+	 ((to-the-left-of) `((agent patient) (referent)))
+	 ((to-the-right-of) `((agent patient) (referent)))
+	 ((picked-up) `((agent) (patient)))
+	 ((put-down) `((agent) (patient)))
+	 ((carried) `((agent) (patient)))
+	 ((approached) `((agent) (goal)))
+	 ((towards) `((agent patient) (goal)))
+	 ((away-from) `((agent patient) (source)))
+	 (else `(,all-roles)))))
+  (define *set1:cfg*
+   (create-cfg
+    (list (make-production-rule 'S '(NP VP))
+		  (make-production-rule 'NP '(D (A) N (PP)))
+		  (make-production-rule 'D '(an))
+		  (make-production-rule 'D '(the))
+		  (make-production-rule 'A '(blue))
+		  (make-production-rule 'A '(red))
+		  (make-production-rule 'N '(person))
+		  (make-production-rule 'N '(backpack))
+		  (make-production-rule 'N '(trash-can))
+		  (make-production-rule 'N '(chair))
+		  (make-production-rule 'N '(object))
+		  (make-production-rule 'PP '(P NP))
+		  (make-production-rule 'P '(to the left of))
+		  (make-production-rule 'P '(to the right of))
+		  (make-production-rule 'VP '(V NP (ADV) (PPM)))
+		  (make-production-rule 'V '(picked up))
+		  (make-production-rule 'V '(put down))
+		  (make-production-rule 'V '(carried))
+		  (make-production-rule 'V '(approached))
+		  (make-production-rule 'ADV '(quickly))
+		  (make-production-rule 'ADV '(slowly))
+		  (make-production-rule 'PPM '(PM NP))
+		  (make-production-rule 'PM '(towards))
+		  (make-production-rule 'PM '(away from)))))
+
+  (sentence:parse-sentence
+    "The person to the left of the backpack approached the trash-can"
+	*set1:cfg*)
+  (sentence:parse-sentence-any
+    "carried the chair"
+	*set1:cfg*)
+  (sentence->roles-and-participants
+    "The person to the left of the backpack approached the trash-can"
+	*set1:cfg*
+	*set1:semantics*)
+
+=== License ===
+
+   Copyright 2002-2013 Purdue University. All rights reserved.
+
+   Contact Siddharth Narayanaswamy, siddharth@iffsid.com.
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU Lesser General Public License for more details.
+   You should have received a copy of the GNU Lesser General Public License
+   along with this program.  If not, see http://www.gnu.org/licenses.
+__NOTOC__

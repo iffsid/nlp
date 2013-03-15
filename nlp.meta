@@ -1,0 +1,14 @@
+;;;  -*- Hen -*-
+
+((category data)
+ (author "Siddharth Narayanaswamy")
+ (maintainer "Siddharth Narayanaswamy")
+ (license "LGPL")
+ (synopsis "Natural Language Processing framework")
+ (depends setup-helper miscmacros check-errors condition-utils
+          traversal nondeterminism define-structure irregex)
+ (test-depends test)
+ (files "nlp.meta"
+        "nlp.release-info"
+        "nlp.scm"
+        "nlp.setup"))
