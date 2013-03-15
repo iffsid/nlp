@@ -33,6 +33,12 @@
  (and (> (length ref) (length l))
     (let loop ((l1 l) (l2 ref))
      (if (null? l1) #t (and (equal? (car l1) (car l2)) (loop (cdr l1) (cdr l2)))))))
+
+(define (group-by f l)
+ (transitive-equivalence-classes (lambda (a b) (equal? (f a) (f b))) l))
+
+(define (drop-until p ls)
+ (let loop ((ls ls)) (if (or (null? ls) (p (car ls))) ls (loop (cdr ls)))))
 ;;; ------
 
 (define-structure cfg rules)
@@ -70,8 +76,8 @@
 (define (cfg:optional-categories-with-rules cfg)
  (map
   (lambda (c) (list (caar c) (map second c)))
-  (transitive-equivalence-classes
-   (lambda (a b) (equal? (car a) (car b)))
+  (group-by
+   first
    (map-reduce
     append
     '()
@@ -144,7 +150,7 @@
     (lambda (nt) (let ((parse (sentence:parse-sentence sentence cfg nt))) (when parse (return parse))))
     (cfg:non-terminals cfg)))))
 
-;;; this needs the tree and zipper data structures
+;;; WIP: this needs the tree and zipper data structures
 
 ;; (define (theta-role-assignments sentence cfg semantics)
 ;;  (define parse (sentence:parse-sentence-any sentence cfg))
@@ -172,46 +178,30 @@
 ;;  (unless parse (error "Failed parse~%  sentence: ~a~%" sentence))
 ;;  (tree->leaves (assign-roles (zipper:initialize (index-leaves parse p-leaf? '()))) ip-leaf?))
 
-;;; examples
-
-;; (define (*set1:semantics* lexical-entry)
-;;  (let ((all-roles '(agent patient referent goal source)))
-;;   (case lexical-entry
-;;    ((to-the-left-of) `((agent patient) (referent)))
-;;    ((to-the-right-of) `((agent patient) (referent)))
-;;    ((picked-up) `((agent) (patient)))
-;;    ((put-down) `((agent) (patient)))
-;;    ((carried) `((agent) (patient)))
-;;    ((approached) `((agent) (goal)))
-;;    ((towards) `((agent patient) (goal)))
-;;    ((away-from) `((agent patient) (source)))
-;;    (else `(,all-roles)))))
-
-;; (define *set1:cfg*
-;;  (create-cfg
-;;   (list (make-production-rule 'S '(NP VP))
-;; 	(make-production-rule 'NP '(D (A) N (PP)))
-;; 	(make-production-rule 'D '(an))
-;; 	(make-production-rule 'D '(the))
-;; 	(make-production-rule 'A '(blue))
-;; 	(make-production-rule 'A '(red))
-;; 	(make-production-rule 'N '(person))
-;; 	(make-production-rule 'N '(backpack))
-;; 	(make-production-rule 'N '(trash-can))
-;; 	(make-production-rule 'N '(chair))
-;; 	(make-production-rule 'N '(object))
-;; 	(make-production-rule 'PP '(P NP))
-;; 	(make-production-rule 'P '(to the left of))
-;; 	(make-production-rule 'P '(to the right of))
-;; 	(make-production-rule 'VP '(V NP (ADV) (PPM)))
-;; 	(make-production-rule 'V '(picked up))
-;; 	(make-production-rule 'V '(put down))
-;; 	(make-production-rule 'V '(carried))
-;; 	(make-production-rule 'V '(approached))
-;; 	(make-production-rule 'ADV '(quickly))
-;; 	(make-production-rule 'ADV '(slowly))
-;; 	(make-production-rule 'PPM '(PM NP))
-;; 	(make-production-rule 'PM '(towards))
-;; 	(make-production-rule 'PM '(away from)))))
+;; (define (sentence->participants-and-roles sentence cfg semantics)
+;;  (let* ((theta-roles (theta-role-assignments sentence cfg semantics))
+;; 	(all-roles '(agent patient referent goal source))
+;; 	(participant-role-pairs
+;; 	 (map
+;; 	  (lambda (g)
+;; 	   (let ((r (map-reduce qintersection all-roles second g)))
+;; 	    (when (null? r) (error "Inconsistent role assignments: ~a" g))
+;; 	    (when (> (length r) 1) (format #t "Ambiguous role assignments: ~a~%" g))
+;; 	    (list (first r) (caar g))))
+;; 	  (group-by
+;; 	   first
+;; 	   (join
+;; 	    (map
+;; 	     (lambda (e)
+;; 	      (let* ((role-entities (drop-until vector? e)) (roles (semantics (second e))))
+;; 	       (unless (= (length roles) (length role-entities))
+;; 		(error "Semantics and assignments don't match!:~% semantics: ~a~% roles: ~a~%"
+;; 		       roles role-entities))
+;; 	       (map list role-entities roles)))
+;; 	     theta-roles))))))
+;;   `(,(map (o string-downcase symbol->string x second) participant-role-pairs)
+;;     ,(map list
+;; 	  (map first participant-role-pairs)
+;; 	  (map (o string-downcase symbol->string x second) participant-role-pairs)))))
 
 )
