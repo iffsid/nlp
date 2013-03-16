@@ -6,7 +6,7 @@
  (license "LGPL")
  (synopsis "Natural Language Processing framework")
  (depends setup-helper miscmacros check-errors condition-utils
-          traversal nondeterminism define-structure irregex)
+          traversal nondeterminism define-structure)
  (test-depends test)
  (files "nlp.meta"
         "nlp.release-info"

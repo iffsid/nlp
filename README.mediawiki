@@ -87,7 +87,7 @@ associations from the provided semantics.
 
 === License ===
 
-   Copyright 2002-2013 Purdue University. All rights reserved.
+   Copyright 2012-2013 Purdue University. All rights reserved.
 
    Contact Siddharth Narayanaswamy, siddharth@iffsid.com.
 
