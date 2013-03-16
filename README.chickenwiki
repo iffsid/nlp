@@ -22,27 +22,27 @@ In the future, this should also include
 
 ==== High-level
 
-<procedure>(sentence:parse-sentence sentence cfg)</procedure>
+<procedure>(nlp:parse-sentence sentence cfg)</procedure>
 
 Parses a given sentence according to the specified CFG and produces a parse
 tree tagged with the corresponding part-of-speech from the CFG.
 
-<procedure>(sentence:parse-sentence-any sentence cfg)</procedure>
+<procedure>(nlp:parse-sentence-any sentence cfg)</procedure>
 
 Where the previous procedure only work for a complete sentence, as mandated by
 the CFG, this procedure will produce a parse-tree for phrases and fragments of
 sentences.
 
-<procedure>(sentence->participants-and-roles sentence cfg semantics)</procedure>
+<procedure>(nlp:sentence->participants-and-roles sentence cfg semantics)</procedure>
 
 Provides an association list of the roles that participants in the sentence are
-deemed to be filling. Uses the ''theta-role-assignment'' procedure to find the
+deemed to be filling. Uses the ''nlp:theta-role-assignment'' procedure to find the
 associations from the provided semantics.
 
 === Examples
 
   (use traversal nondeterminism nlp)
-  (define (*set1:semantics* lexical-entry)
+  (define (*example:semantics* lexical-entry)
    (let ((all-roles '(agent patient referent goal source)))
     (case lexical-entry
          ((to-the-left-of) `((agent patient) (referent)))
@@ -54,7 +54,7 @@ associations from the provided semantics.
           ((towards) `((agent patient) (goal)))
           ((away-from) `((agent patient) (source)))
           (else `(,all-roles)))))
-  (define *set1:cfg*
+  (define *example:cfg*
    (create-cfg
     (list (make-production-rule 'S '(NP VP))
           (make-production-rule 'NP '(D (A) N (PP)))
@@ -80,17 +80,16 @@ associations from the provided semantics.
           (make-production-rule 'PPM '(PM NP))
           (make-production-rule 'PM '(towards))
           (make-production-rule 'PM '(away from)))))
-
   (sentence:parse-sentence
     "The person to the left of the backpack approached the trash-can"
-    *set1:cfg*)
+    *example:cfg*)
   (sentence:parse-sentence-any
     "carried the chair"
-    *set1:cfg*)
+    *example:cfg*)
   (sentence->roles-and-participants
     "The person to the left of the backpack approached the trash-can"
-    *set1:cfg*
-    *set1:semantics*)
+    *example:cfg*
+    *example:semantics*)
 
 === License
 
